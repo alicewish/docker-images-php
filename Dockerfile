@@ -8,9 +8,6 @@ LABEL authors="Julien Neuhart <j.neuhart@thecodingmachine.com>, David Négrier <
 # Ensure apt doesn't ask questions when installing stuff
 ENV DEBIAN_FRONTEND=noninteractive
 
-ARG PHP_VERSION=7.3
-ENV PHP_VERSION=$PHP_VERSION
-
 # |--------------------------------------------------------------------------
 # | Main PHP extensions
 # |--------------------------------------------------------------------------
@@ -34,14 +31,14 @@ RUN apt-get update \
         unzip \
         ca-certificates \
         curl \
-        php${PHP_VERSION}-cli \
-        php${PHP_VERSION}-curl \
-        php${PHP_VERSION}-json \
-        php${PHP_VERSION}-mbstring \
-        php${PHP_VERSION}-opcache \
-        php${PHP_VERSION}-readline \
-        php${PHP_VERSION}-xml \
-        php${PHP_VERSION}-zip \
+        php7.3-cli \
+        php7.3-curl \
+        php7.3-json \
+        php7.3-mbstring \
+        php7.3-opcache \
+        php7.3-readline \
+        php7.3-xml \
+        php7.3-zip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
 
@@ -64,18 +61,18 @@ RUN echo '%sudo ALL=(ALL) NOPASSWD:ALL' >> /etc/sudoers
 # | but no php.ini-development.cli file. Let's create this one.
 # |
 
-RUN cp /usr/lib/php/${PHP_VERSION}/php.ini-development /usr/lib/php/${PHP_VERSION}/php.ini-development.cli && \
-    sed -i 's/^disable_functions/;disable_functions/g' /usr/lib/php/${PHP_VERSION}/php.ini-development.cli && \
-    sed -i 's/^memory_limit = .*/memory_limit = -1/g' /usr/lib/php/${PHP_VERSION}/php.ini-development.cli
+RUN cp /usr/lib/php/7.3/php.ini-development /usr/lib/php/7.3/php.ini-development.cli && \
+    sed -i 's/^disable_functions/;disable_functions/g' /usr/lib/php/7.3/php.ini-development.cli && \
+    sed -i 's/^memory_limit = .*/memory_limit = -1/g' /usr/lib/php/7.3/php.ini-development.cli
 
-#ADD https://raw.githubusercontent.com/php/php-src/PHP-${PHP_VERSION}/php.ini-production /usr/local/etc/php/php.ini-production
-#ADD https://raw.githubusercontent.com/php/php-src/PHP-${PHP_VERSION}/php.ini-development /usr/local/etc/php/php.ini-development
+#ADD https://raw.githubusercontent.com/php/php-src/PHP-7.3/php.ini-production /usr/local/etc/php/php.ini-production
+#ADD https://raw.githubusercontent.com/php/php-src/PHP-7.3/php.ini-development /usr/local/etc/php/php.ini-development
 #RUN chmod 644 /usr/local/etc/php/php.ini-*
 
 ENV TEMPLATE_PHP_INI=development
 
 # Let's remove the default CLI php.ini file (it will be copied from TEMPLATE_PHP_INI)
-RUN rm /etc/php/${PHP_VERSION}/cli/php.ini
+RUN rm /etc/php/7.3/cli/php.ini
 
 # |--------------------------------------------------------------------------
 # | Composer
@@ -149,7 +146,7 @@ ENV APACHE_ENVVARS $APACHE_CONFDIR/envvars
 
 RUN set -eux; \
 	apt-get update; \
-	apt-get install -y --no-install-recommends apache2 libapache2-mod-php${PHP_VERSION}; \
+	apt-get install -y --no-install-recommends apache2 libapache2-mod-php7.3; \
 	rm -rf /var/lib/apt/lists/*; \
 	\
 # generically convert lines like
@@ -207,7 +204,7 @@ RUN sed -ri -e 's!/var/www/html!${ABSOLUTE_APACHE_DOCUMENT_ROOT}!g' /etc/apache2
 RUN sed -ri -e 's!/var/www/!${ABSOLUTE_APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
 
 # Let's remove the default Apache php.ini file (it will be copied from TEMPLATE_PHP_INI)
-RUN rm /etc/php/${PHP_VERSION}/apache2/php.ini
+RUN rm /etc/php/7.3/apache2/php.ini
 
 # |--------------------------------------------------------------------------
 # | Apache mod_rewrite
@@ -302,7 +299,7 @@ COPY utils/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY utils/docker-entrypoint-as-root.sh /usr/local/bin/docker-entrypoint-as-root.sh
 
 COPY extensions/ /usr/local/lib/thecodingmachine-php/extensions
-RUN ln -s ${PHP_VERSION} /usr/local/lib/thecodingmachine-php/extensions/current
+RUN ln -s 7.3 /usr/local/lib/thecodingmachine-php/extensions/current
 
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
@@ -328,10 +325,10 @@ ENV APACHE_RUN_USER=docker \
 
 
 
-RUN touch /etc/php/${PHP_VERSION}/mods-available/generated_conf.ini && ln -s /etc/php/${PHP_VERSION}/mods-available/generated_conf.ini /etc/php/${PHP_VERSION}/cli/conf.d/generated_conf.ini
+RUN touch /etc/php/7.3/mods-available/generated_conf.ini && ln -s /etc/php/7.3/mods-available/generated_conf.ini /etc/php/7.3/cli/conf.d/generated_conf.ini
 
 
-RUN ln -s /etc/php/${PHP_VERSION}/mods-available/generated_conf.ini /etc/php/${PHP_VERSION}/apache2/conf.d/generated_conf.ini
+RUN ln -s /etc/php/7.3/mods-available/generated_conf.ini /etc/php/7.3/apache2/conf.d/generated_conf.ini
 
 
 
